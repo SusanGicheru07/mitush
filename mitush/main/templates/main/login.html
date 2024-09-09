@@ -1,0 +1,102 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<main class="main">
+    <section id="login-section" class="login-section">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        
+        <div class="registration-container" id="registration-container">
+            <div class="form-wrapper">
+                <div class="sign-up-form">
+                    <form method="POST" action="{% url 'register' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <h1>You new here?</h1>
+                        
+                        <h3>Sign Up</h3> <br>
+                        <label for="name">Name</label>
+                        <input type="text" name="name" placeholder="Joe Mwangi" required> <br>
+                        
+                        <label for="email">Email</label>
+                        <input type="email" name="email" placeholder="joemwangi@email.com" required> <br>
+                        
+                        <label for="password">Password</label>
+                
+                        <input type="password" name="password" required>
+                         
+
+                        <label for="confirm-password">Confirm Password</label>
+                        <input type="password" name="confirm-password" required>
+                        <div class="password-input">
+                            
+                            
+                            
+                        </div>
+                        <input type="submit" value="Sign Up">
+                    </form>  
+                </div>
+
+                <div class="sign-in-form">
+                    <h1>Hello Buddy!</h1> <br>
+                    <p>Welcome Back :)</p>
+                    <form method="POST" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <input type="text" name="username" class="username" placeholder="Username" required> <br>
+                        <input type="password" name="password" placeholder="Password" required>
+                        <div class="password-input">
+                            
+                            
+                        </div>
+                        
+                        <input type="submit" class="login" value="Login">
+                    </form>
+                </div>
+            </div>
+
+            <div class="switch-container">
+                <div class="sign-up-switch">
+                    <h1>Haven't Signed Up yet?</h1>
+                    <p>Sign up with your personal details to use all of our services</p>
+                    <button class="switch-btn">Sign Up</button>
+                </div>
+                <div class="sign-in-switch">
+                    <h1>Already Signed Up?</h1>
+                    <p>Sign in with your personal details to use all of our services</p>
+                    <button class="switch-btn">Sign In</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+  
+
+const signUpForm = document.querySelector('.sign-up-form');
+const signInForm = document.querySelector('.sign-in-form');
+const signUpSwitch = document.querySelector('.sign-up-switch');
+const signInSwitch = document.querySelector('.sign-in-switch');
+const switchBtns = document.querySelectorAll('.switch-btn');
+
+// Show sign-up form and switch by default
+signUpForm.classList.add('active');
+signInSwitch.classList.add('active');
+
+switchBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    signUpForm.classList.toggle('active');
+    signInForm.classList.toggle('active');
+    signUpSwitch.classList.toggle('active');
+    signInSwitch.classList.toggle('active');
+  });
+});
+
+</script>
+{% endblock content %}

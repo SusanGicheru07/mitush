@@ -1,0 +1,81 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="payment-container">
+    <h1>Payment</h1>
+    <div class="order-summary">
+        <h2>Order Summary</h2>
+        <p>Order ID: {{ order.id }}</p>
+        <p>Total Amount: Ksh {{ order.total_amount }}</p>
+        <p>Shipping Fee: Ksh {{ order.shipping_fee }}</p>
+        <p>Total to Pay: Ksh {{ order.total_amount|add:order.shipping_fee }}</p>
+    </div>
+    <form id="payment-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="phone_number">M-Pesa Phone Number:</label>
+            <input type="text" id="phone_number" name="phone_number" placeholder="254XXXXXXXXX" required>
+        </div>
+        <div id="payment-message" role="alert"></div>
+        <button id="submit-button" class="pay-button">Pay Ksh {{ order.total_amount|add:order.shipping_fee }}</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('payment-form');
+        var submitButton = document.getElementById('submit-button');
+        var messageElement = document.getElementById('payment-message');
+
+        function checkPaymentStatus() {
+            fetch('{% url "check_payment_status" order.id %}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'paid') {
+                        messageElement.textContent = 'Payment successful! Redirecting to order confirmation...';
+                        messageElement.style.color = 'green';
+                        setTimeout(() => {
+                            window.location.href = '{% url "order_confirmation" order.id %}';
+                        }, 2000);
+                    } else {
+                        setTimeout(checkPaymentStatus, 5000);  // Check again in 5 seconds
+                    }
+                });
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            submitButton.disabled = true;
+            messageElement.textContent = 'Processing payment...';
+            messageElement.style.color = 'blue';
+
+            var phoneNumber = document.getElementById('phone_number').value;
+            
+            fetch('{% url "payment" order.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: 'phone_number=' + phoneNumber
+            })
+            .then(function(result) {
+                return result.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    messageElement.textContent = data.message;
+                    messageElement.style.color = 'green';
+                    checkPaymentStatus();  // Start checking payment status
+                } else {
+                    messageElement.textContent = data.error;
+                    messageElement.style.color = 'red';
+                    submitButton.disabled = false;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

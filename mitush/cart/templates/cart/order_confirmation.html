@@ -1,0 +1,63 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="order-confirmation-container">
+    <h1>Order Confirmation</h1>
+    <div class="order-details">
+        <h2>Order Details</h2>
+        <p>Order ID: {{ order.id }}</p>
+        <p>Order Date: {{ order.order_date }}</p>
+        <p>Payment Method: {{ order.payment_method }}</p>
+        <p>Payment Date: {{ order.payment_date }}</p>
+    </div>
+
+    <div class="shipping-details">
+        <h2>Shipping Details</h2>
+        <p>{{ order.first_name }} {{ order.last_name }}</p>
+        <p>{{ order.address }}</p>
+        <p>{{ order.county }}, {{ order.zip_code }}</p>
+        <p>Phone: {{ order.phone }}</p>
+        <p>Email: {{ order.email }}</p>
+        <p>Delivery Method: {{ order.delivery_method }}</p>
+    </div>
+
+    <div class="order-items">
+        <h2>Order Items</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>Ksh {{ item.price }}</td>
+                    <td>Ksh {{ item.price|multiply:item.quantity }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="order-summary">
+        <h2>Order Summary</h2>
+        <p>Subtotal: Ksh {{ order.total_amount }}</p>
+        <p>Shipping Fee: Ksh {{ order.shipping_fee }}</p>
+        <p class="grand-total">Grand Total: Ksh {{ order.total_amount|add:order.shipping_fee }}</p>
+    </div>
+
+    <div class="thank-you-message">
+        <h2>Thank You for Your Order!</h2>
+        <p>We've received your order and will process it as soon as possible. You will receive an email confirmation shortly.</p>
+    </div>
+
+    <a href="{% url 'home' %}" class="continue-shopping-btn">Continue Shopping</a>
+</div>
+{% endblock %}

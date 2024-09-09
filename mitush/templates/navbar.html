@@ -1,0 +1,167 @@
+{% load static %}
+<header id="header" class="header fixed-top">
+    <div class="topbar d-flex align-items-center">
+        <div class="container d-flex justify-content-center justify-content-md-between">
+            <div class="social-links d-none d-md-flex align-items-center">
+                <a href="https://www.google.com" target="_blank" class="twitter"><i class="bi bi-twitter"></i></a>
+                <a href="https://www.google.com" target="_blank" class="facebook"><i class="bi bi-facebook"></i></a>
+                <a href="https://www.google.com" target="_blank" class="instagram"><i class="bi bi-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="branding">
+        <div class="logo-container">
+            <img src="{% static 'assets/img/logo.png' %}" width="80" height="80" alt="Mitumba Kenya Logo">
+            <h1 class="sitename">Mitumba Kenya</h1>
+        </div>
+        <nav class="navbar">
+            <ul class="nav-menu">
+                <li class="always-visible"><a href="{% url 'home' %}">Home</a></li>
+                
+                <li class="dropdown">
+                    <a href="#" class="dropbtn">Categories <i class="bi bi-chevron-down"></i></a>
+                    <div class="dropdown-content">
+                        {% for category in categories_with_sections %}
+                        <div class="category">
+                            <a href="{% url 'category_page' category.id %}">{{ category.name }}</a>
+                            {% if category.sections.exists %}
+                            <div class="sub-dropdown">
+                                {% for section in category.sections.all %}
+                                <a href="{% url 'category_page' category.id %}#section-{{ section.id }}" class="section-link" data-category="{{ category.id }}" data-section="{{ section.id }}">{{ section.name }}</a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </li>
+                {% if user.is_authenticated %}
+                    <li class="always-visible"><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li class="always-visible"><a href="{% url 'login' %}">Login</a></li>
+                {% endif %}
+                <li class="always-visible" ><a href="{% url 'view_cart' %}"><i class="bi bi-cart"></i></a></li>
+            </ul>
+        </nav>
+        <div class="mobile-nav-toggle">
+            <i class="bi bi-list"></i>
+        </div>
+    </div>
+
+
+</header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+    const navbar = document.querySelector('.navbar');
+    const navMenu = document.querySelector('.nav-menu');
+    const dropdowns = document.querySelectorAll('.dropdown');
+    const categoryDropdown = document.querySelector('.dropdown');
+    
+    function handleViewportChange() {
+        const viewportWidth = window.innerWidth;
+        
+        if (viewportWidth > 991) {
+            // Desktop view
+            navMenu.style.display = 'flex';
+            categoryDropdown.style.display = 'block';
+            navbar.classList.remove('navbar-mobile', 'active');
+        } else if (viewportWidth > 768 && viewportWidth <= 991) {
+            // Tablet view
+            navMenu.style.display = 'flex';
+            categoryDropdown.style.display = 'none';
+            navbar.classList.remove('navbar-mobile', 'active');
+        } else {
+            // Mobile view
+            navMenu.style.display = 'none';
+            navbar.classList.remove('navbar-mobile', 'active');
+        }
+    }
+
+    function toggleMobileNav() {
+        navbar.classList.toggle('navbar-mobile');
+        navbar.classList.toggle('active');
+        mobileNavToggle.classList.toggle('bi-list');
+        mobileNavToggle.classList.toggle('bi-x');
+        
+        if (navbar.classList.contains('navbar-mobile')) {
+            navMenu.style.display = 'block';
+            categoryDropdown.style.display = 'block';
+        } else {
+            const viewportWidth = window.innerWidth;
+            if (viewportWidth <= 768) {
+                navMenu.style.display = 'none';
+            } else if (viewportWidth <= 991) {
+                navMenu.style.display = 'flex';
+                categoryDropdown.style.display = 'none';
+            }
+        }
+    }
+
+    mobileNavToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleMobileNav();
+    });
+
+    // Handle dropdowns in mobile view
+    dropdowns.forEach(dropdown => {
+        const dropdownToggle = dropdown.querySelector('.dropbtn');
+        const dropdownContent = dropdown.querySelector('.dropdown-content');
+        
+        dropdownToggle.addEventListener('click', function(e) {
+            if (navbar.classList.contains('navbar-mobile')) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+                dropdownContent.style.display = dropdown.classList.contains('active') ? 'block' : 'none';
+            }
+        });
+    });
+
+    // Handle sub-dropdowns in mobile view
+    const categories = document.querySelectorAll('.category');
+    categories.forEach(category => {
+        const categoryLink = category.querySelector('a');
+        const subDropdown = category.querySelector('.sub-dropdown');
+        
+        if (categoryLink && subDropdown) {
+            categoryLink.addEventListener('click', function(e) {
+                if (navbar.classList.contains('navbar-mobile')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    category.classList.toggle('active');
+                    subDropdown.style.display = category.classList.contains('active') ? 'block' : 'none';
+                }
+            });
+        }
+    });
+
+    // Close mobile nav when clicking outside
+    document.addEventListener('click', function(e) {
+        if (navbar.classList.contains('navbar-mobile') &&
+            !navbar.contains(e.target) &&
+            !mobileNavToggle.contains(e.target)) {
+            toggleMobileNav();
+        }
+    });
+
+    // Prevent clicks inside the mobile nav from closing it
+    navbar.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+
+    // Initial call to set the correct view
+    handleViewportChange();
+
+    // Listen for window resize events
+    window.addEventListener('resize', handleViewportChange);
+});
+
+
+
+</script>
+
+
+    

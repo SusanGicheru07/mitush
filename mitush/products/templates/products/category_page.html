@@ -1,0 +1,177 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .notification.show {
+        opacity: 1;
+    }
+    .notification.success {
+        background-color: #4CAF50;
+    }
+    .notification.error {
+        background-color: #f44336;
+    }
+</style>
+
+<section id="category-page">
+    <main>
+        <section id="category-main-section">
+            <div id="category-content-area">
+                <section id="category-welcome" class="welcome-section">
+                    <h1>Welcome to Our {{ category.name }} Store</h1> <hr>
+                    <p>Browse through our selection of {{ category.name }} items.</p>
+                </section>
+                
+                <div id="product-grid">
+                    {% for subsection, items in items_by_subsection.items %}
+                        <div id="section-{{ subsection.id }}" class="subsection-column">
+                            <h2 class="subsection-title">{{ subsection.name }}</h2>
+                            <div class="subsection-container">
+                                {% for item in items %}
+                                    <figure class="box">
+                                        <div class="image-container">
+                                            {% if item.image %}
+                                                <img src="{{ item.image.url }}" alt="{{ item.name }}" />
+                                            {% else %}
+                                                <img src="{% static 'assets/img/insta.jpg' %}" alt="No Image Available" />
+                                            {% endif %}
+                                        </div>
+                                        <div class="item-details">
+                                            <figcaption>{{ item.name }}</figcaption>
+                                            <div class="price-info">
+                                                <span class="price">Ksh {{ item.price|floatformat:2 }} 
+                                                    <button class="add-to-cart" data-item-id="{{ item.id }}">Add to Cart</button>
+                                            </div>
+                                        </div>
+                                    </figure>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </main>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if there's a hash in the URL and scroll to the section
+        if (window.location.hash) {
+            var targetElement = document.querySelector(window.location.hash);
+            if (targetElement) {
+                setTimeout(function() {
+                    targetElement.scrollIntoView({behavior: 'smooth'});
+                }, 100);
+            }
+        }
+    });
+
+    console.log('Cart script loaded');
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded');
+
+        const addToCartButtons = document.querySelectorAll('.add-to-cart');
+        console.log('Found add-to-cart buttons:', addToCartButtons.length);
+
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                console.log('Button clicked');
+                e.preventDefault();
+                const itemId = this.getAttribute('data-item-id');
+                console.log('Item ID:', itemId);
+                addToCart(itemId);
+            });
+        });
+
+        function addToCart(itemId) {
+            console.log('Adding item to cart:', itemId);
+            fetch(`/cart/add/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    updateCartCount(data.cart_items_count);
+                } else {
+                    showNotification('Failed to add item to cart: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        function updateCartCount(count) {
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = count;
+            } else {
+                console.log('Cart count element not found');
+            }
+        }
+
+        function showNotification(message, type) {
+            console.log('Showing notification:', message, type);
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+
+    
+{% endblock content %}

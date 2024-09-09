@@ -1,0 +1,96 @@
+{% extends 'main.html' %}
+{% load static %}
+{% block content %}
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<main class="main">
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+        <div class="hero-content">
+            <h1><span class="accent">Mitumba Kenya</h1>
+            <p>Your passionate lifestyle partner with quality, stylish, and affordable second-hand collections.</p>
+            <a href="#categories" class="cta-button">Explore Collections</a>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+        <section id="categories" class="categories-section">
+            <h2>Our Collections</h2>
+            <div class="category-sliders">
+                {% for category in categories_with_items %}
+                    <div class="category-slider">
+                        <div class="section-title">
+                            <h2>{{ category.name }}</h2>
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider">
+                                {% for item in category.random_items %}
+                                    <div class="slide {% cycle 'slide' 'flip' 'fade' %}">
+                                        <div class="slide-inner">
+                                            <div class="slide-front">
+                                                {% if item.image %}
+                                                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                                                {% else %}
+                                                    <img src="{% static 'images/default_product.jpg' %}" alt="Default Product Image">
+                                                {% endif %}
+                                            </div>
+                                            <div class="slide-back">
+                                                <p>{{ item.name }}</p>
+                                                <p><span class="price">{{ item.formatted_price }}</p>
+                                                <span class="section">{{ item.description }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <p>No items available in this category.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No categories available at the moment.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+
+        <!-- Contact Section -->
+   
+        <section id="contact-section">
+            <div class="contact-form-container">
+            <h2>Contact</h2>
+            <form id="contact-form" action="{% url 'contact' %}" method="post">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div class="form-group">
+                    <input type="text" id="name" name="name" required placeholder="Name">
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email" name="email" required placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <input type="tel" id="phone" name="phone" placeholder="Phone (optional)">
+                </div>
+                <div class="form-group">
+                    <textarea id="message" name="message" required placeholder="Message"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Send Message</button>
+                </div>
+            </form>
+            </div>
+        
+        </section>     
+        
+ 
+
+  </main>
+
+{% endblock content %}

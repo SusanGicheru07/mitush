@@ -1,0 +1,77 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block content %}
+<div class="checkout-container">
+    <h1>Checkout</h1>
+    <form id="checkout-form" method="post" action="{% url 'checkout' %}">
+        {% csrf_token %}
+        <section class="checkout-section">
+            <h2>01 Personal Details</h2>
+            <div class="form-row">
+                <input type="text" name="first_name" placeholder="First Name" required value="{{ user.first_name }}">
+                <input type="text" name="last_name" placeholder="Last Name" required value="{{ user.last_name }}">
+            </div>
+            <input type="email" name="email" placeholder="Email Address" required value="{{ user.email }}">
+            <input type="tel" name="phone" placeholder="Phone Number" required>
+        </section>
+
+        <section class="checkout-section">
+            <h2>02 Delivery Address</h2>
+            <input type="text" name="address" placeholder="Address" required>
+            <input type="text" name="county" placeholder="County" required>
+            <input type="text" name="zip" placeholder="Zip Code (optional)">
+        </section>
+
+        <section class="checkout-section">
+            <h2>03 Delivery Method</h2>
+            <div class="radio-group">
+                {% for method in delivery_methods %}
+                <label class="radio-label">
+                    <input type="radio" name="delivery" value="{{ method.value }}" 
+                           {% if method.value == selected_delivery %}checked{% endif %}
+                           onchange="updateDelivery(this.value)">
+                    <span>{{ method.name }} - Ksh {{ method.price }}
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="checkout-section total-section">
+            <h2>Order Summary</h2>
+            {% for item in cart_items %}
+                <div class="cart-item">
+                    <span>{{ item.item.name }} x {{ item.quantity }}
+                    <span>Ksh {{ item.subtotal }}
+                </div>
+            {% endfor %}
+            <div class="total-row">
+                <span>Subtotal:
+                <span class="subtotal-amount">Ksh {{ subtotal }}
+            </div>
+            <div class="total-row">
+                <span>Shipping Fee:
+                <span class="shipping-fee">Ksh {{ shipping_fee }}
+            </div>
+            <div class="total-row grand-total">
+                <span>Grand Total:
+                <span class="grand-total-amount">Ksh {{ grand_total }}
+            </div>
+        </section>
+
+        <button type="submit" name="pay" class="pay-button">Pay Ksh {{ grand_total }}</button>
+    </form>
+</div>
+
+<script>
+function updateDelivery(value) {
+    var form = document.getElementById('checkout-form');
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'delivery';
+    input.value = value;
+    form.appendChild(input);
+    form.submit();
+}
+</script>
+{% endblock content %}
